@@ -1,0 +1,173 @@
+<div class="template-blog">
+  <header class="page-header">
+    <h1 class="page-header__title">{{ page_title }}</h1>
+
+    {%- if blog.tags.size > 0 -%}
+      <div class="blog-filter">
+        <label class="blog-filter__label" for="BlogTagFilter">{{ 'general.filters.title_tags' | t }}</label>
+        <div>
+          <select id="BlogTagFilter"
+            class="form__input form__input--select"
+            aria-describedby="a11y-refresh-page-message a11y-selection-message"
+            data-blog-tag-filter
+            style="background-image: url({{ 'icon-select.svg' | asset_url }});"
+          >
+            <option value="{{ blog.url }}">{{ 'blogs.article.all_topics' | t }}</option>
+            {% for tag in blog.all_tags %}
+              <option value="{{ blog.url }}/tagged/{{ tag | handleize }}" {% if current_tags contains tag %}selected{% endif %}>{{ tag }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    {%- endif -%}
+  </header>
+
+  <ul class="template-blog__list">
+    {% for article in blog.articles %}
+      <li class="blog-item">
+        <h2 class="blog-item-title">
+          <a href="{{ article.url }}" class="blog-item-title__link">{{ article.title }}</a>
+        </h2>
+
+        {%- if section.settings.show_author -%}
+          <span class="blog-item__author">{{ 'blogs.article.by_author' | t: author: article.author }}</span>
+        {%- endif -%}
+
+        {%- if section.settings.show_date -%}
+          <span class="blog-item__date">
+            {{ article.published_at | time_tag: format: 'date' }}
+          </span>
+        {%- endif -%}
+
+        {%- if article.image -%}
+          <a href="{{ article.url }}">
+            <img srcset="{% if article.image.width >= 311 %}{{ article.image | img_url: '311x' }} 311w,{% endif %}
+                {% if article.image.width >= 622 %}{{ article.image | img_url: '622x' }} 622w,{% endif %}
+                {% if article.image.width >= 503 %}{{ article.image | img_url: '503x' }} 503w,{% endif %}
+                {% if article.image.width >= 1006 %}{{ article.image | img_url: '1006x' }} 1006w,{% endif %}
+                {% if article.image.width >= 685 %}{{ article.image | img_url: '685x' }} 685w,{% endif %}
+                {% if article.image.width >= 1370 %}{{ article.image | img_url: '1370x' }} 1370w{% endif %}"
+              sizes="(min-width: 1200px) 1080px, (min-width: 750px) calc(100vw - 12rem), calc(100vw - 6.4rem)"
+              src="{{ article.image | img_url: '600x' }}"
+              width="{{ article.image.width }}"
+              height="{{ article.image.height }}"
+              loading="lazy"
+              class="blog-item__image"
+              alt="{{ article.image.alt | escape }}">
+          </a>
+        {%- endif -%}
+
+        <div class="rte">
+          {%- if article.excerpt.size > 0 -%}
+            {{ article.excerpt }}
+          {%- else -%}
+            {{ article.content | strip_html | truncate: 150 }}
+          {%- endif -%}
+        </div>
+
+        {%- if article.tags.size > 0 -%}
+          <div class="blog-item-tags">
+            {{ 'blogs.article.posted_in' | t }}
+            {% for tag in article.tags %}
+              <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="blog-item-tags__link">{{ tag }}</a>{% unless forloop.last %}, {% endunless %}
+            {% endfor %}
+          </div>
+        {%- endif -%}
+
+        <ul class="blog-item-meta">
+          <li>
+            <a href="{{ article.url }}" class="blog-item-meta__link" aria-label="{{ 'blogs.article.read_more_title' | t: title: article.title }}">
+              {{ 'blogs.article.read_more' | t }}
+            </a>
+          </li>
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% schema %}
+{
+  "name": {
+    "cs": "Stránky blogu",
+    "da": "Blogsider",
+    "de": "Blog-Seiten",
+    "en": "Blog pages",
+    "es": "Páginas del blog",
+    "fi": "Blogisivut",
+    "fr": "Pages du blog",
+    "it": "Pagine del blog",
+    "ja": "ブログページ",
+    "ko": "블로그 페이지",
+    "nb": "Bloggsider",
+    "nl": "Blogpagina's",
+    "pl": "Strony blogu",
+    "pt-BR": "Páginas do blog",
+    "pt-PT": "Páginas do blogue",
+    "sv": "Bloggsidor",
+    "th": "หน้าบล็อก",
+    "tr": "Blog sayfaları",
+    "vi": "Trang Blog",
+    "zh-CN": "博客页面",
+    "zh-TW": "部落格頁面"
+  },
+  "settings": [
+    {
+      "id": "show_author",
+      "type": "checkbox",
+      "default": true,
+      "label": {
+        "cs": "Zobrazit autora",
+        "da": "Vis forfatter",
+        "de": "Autor anzeigen",
+        "en": "Show author",
+        "es": "Mostrar autor",
+        "fi": "Näytä tekijä",
+        "fr": "Afficher l'auteur",
+        "it": "Mostra autore",
+        "ja": "執筆者を表示する",
+        "ko": "작성자 표시",
+        "nb": "Vis forfatter",
+        "nl": "Auteur weergeven",
+        "pl": "Pokaż autora",
+        "pt-BR": "Exibir autor",
+        "pt-PT": "Mostrar autor",
+        "sv": "Visa författare",
+        "th": "แสดงผู้เขียน",
+        "tr": "Yazarı göster",
+        "vi": "Hiển thị tác giả",
+        "zh-CN": "显示作者",
+        "zh-TW": "顯示作者"
+      }
+    },
+    {
+      "id": "show_date",
+      "type": "checkbox",
+      "default": true,
+      "label": {
+        "cs": "Zobrazit datum",
+        "da": "Vis dato",
+        "de": "Datum anzeigen",
+        "en": "Show date",
+        "es": "Mostrar fecha",
+        "fi": "Näytä päivämäärä",
+        "fr": "Afficher la date",
+        "it": "Mostra data",
+        "ja": "日付を表示する",
+        "ko": "날짜 표시",
+        "nb": "Vis dato",
+        "nl": "Datum weergeven",
+        "pl": "Pokaż datę",
+        "pt-BR": "Exibir data",
+        "pt-PT": "Mostrar data",
+        "sv": "Visa datum",
+        "th": "แสดงวันที่",
+        "tr": "Tarihi göster",
+        "vi": "Hiển thị ngày",
+        "zh-CN": "显示日期",
+        "zh-TW": "顯示日期"
+      }
+    }
+  ]
+}
+{% endschema %}

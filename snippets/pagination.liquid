@@ -1,0 +1,35 @@
+<nav class="pagination" role="navigation" aria-label="{{ 'general.pagination.label' | t }}">
+  <ul class="pagination__list" role="list">
+  {%- if paginate.previous -%}
+    <li>
+      <a href="{{ paginate.previous.url }}" class="pagination__page pagination__page--previous">
+        {%- render 'icon-arrow-right' -%}
+        <span class="visually-hidden">{{ 'general.pagination.previous' | t }}</span>
+      </a>
+    </li>
+  {%- endif -%}
+
+  {%- for part in paginate.parts -%}
+    <li>
+      {%- if part.is_link -%}
+        <a href="{{ part.url }}" class="pagination__page">{{ part.title }}</a>
+      {%- else -%}
+        {%- if part.title == paginate.current_page -%}
+          <span class="pagination__page pagination__page--current" aria-current="page">{{ part.title }}</span>
+        {%- else -%}
+          <span class="pagination__page pagination__page--dots">{{ part.title }}</span>
+        {%- endif -%}
+      {%- endif -%}
+    </li>
+  {%- endfor -%}
+
+  {%- if paginate.next -%}
+    <li>
+      <a href="{{ paginate.next.url }}" class="pagination__page">
+        {%- render 'icon-arrow-right' -%}
+        <span class="visually-hidden">{{ 'general.pagination.next' | t }}</span>
+      </a>
+    </li>
+  {%- endif -%}
+  </ul>
+</nav>

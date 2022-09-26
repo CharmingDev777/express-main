@@ -1,0 +1,112 @@
+{%- comment -%}
+  Renders a list of menu items
+  Accepts:
+  - menu: {Object} Linklist Liquid object (required)
+  - is_mobile: {Boolean} Indicating if menu is for mobile or desktop
+
+  Usage:
+  {% render 'menu-navigation', menu: linklists[section.settings.main_menu] %}
+{%- endcomment -%}
+
+<nav class="{% if is_mobile %}mobile-menu-navigation critical-hidden{% else %}menu-navigation-wrapper menu-navigation-wrapper--hidden{% endif %}"
+  role="navigation"
+  data-menu-navigation
+  data-menu-navigation-type="{% if is_mobile %}mobile{% else %}desktop{% endif %}"
+  {% if is_mobile %} data-popup-focus="menu-navigation" tabindex="-1"{% endif %}
+>
+  <ul class="menu-navigation" role="list">
+    {%- for link in menu.links -%}
+      <li class="menu-navigation__list-item"
+          {% if forloop.last %} data-menu-navigation-last-item{% endif %}
+      >
+        {%- if link.links != blank -%}
+          <button
+            class="menu-navigation__item menu-navigation__item--has-dropdown {%- if link.child_active %} menu-navigation__item--active{% endif %}"
+            data-dropdown-parent
+            data-dropdown-parent-type="main"
+            aria-expanded="false"
+            aria-haspopup="true"
+            aria-controls="MenuNavigation-{{ link.title | handleize }}"
+          >
+            <span class="menu-navigation__title menu-navigation__title--main-menu">{{ link.title | escape }}</span>
+            {% render 'icon-select' %}
+          </button>
+
+          <ul id="MenuNavigation-{{ link.title | handleize }}"
+            class="menu-dropdown menu-dropdown--second-level"
+            data-dropdown-menu
+          >
+            {%- for childlink in link.links -%}
+              <li class="menu-dropdown__list-item">
+                {%- if childlink.links != blank and link.levels == 2 -%}
+                  <button
+                    class="menu-dropdown__item menu-dropdown__item--has-dropdown"
+                    data-dropdown-parent
+                    data-dropdown-parent-type="child"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    aria-controls="MenuNavigation-{{ childlink.title | handleize }}"
+                  >
+                    <span class="menu-navigation__title">{{ childlink.title | escape }}</span>
+                    {% render 'icon-select' %}
+                  </button>
+
+                  <ul id="MenuNavigation-{{ childlink.title | handleize }}"
+                    class="menu-dropdown menu-dropdown--third-level"
+                    data-dropdown-menu>
+                    {%- for grandchildlink in childlink.links -%}
+                      <li class="menu-dropdown__list-item">
+                        <a href="{{ grandchildlink.url }}"
+                          class="menu-dropdown__item menu-dropdown__item--link"
+                          {%- if grandchildlink.current %} aria-current="page" {%- endif %}
+                        >
+                          {{ grandchildlink.title | escape }}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- else -%}
+                  <a href="{{ childlink.url }}"
+                    class="menu-dropdown__item menu-dropdown__item--link"
+                    {%- if childlink.current %} aria-current="page" {%- endif %}
+                  >
+                    {{ childlink.title | escape }}
+                  </a>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+          <a href="{{ link.url }}"
+            class="menu-navigation__item menu-navigation__item--link {%- if link.active %} menu-navigation__item--active{% endif %} menu-navigation__item--no-js"
+            {%- if childlink.current %} aria-current="page" {%- endif %}
+          >
+            <span class="menu-navigation__title menu-navigation__title--main-menu">{{ link.title | escape }}</span>
+          </a>
+        {%- else -%}
+          <a href="{{ link.url }}"
+            class="menu-navigation__item menu-navigation__item--link {%- if link.active %} menu-navigation__item--active{% endif %}"
+            {%- if childlink.current %} aria-current="page" {%- endif %}
+          >
+            <span class="menu-navigation__title menu-navigation__title--main-menu">{{ link.title | escape }}</span>
+          </a>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+    {%- if is_mobile and shop.customer_accounts_enabled -%}
+      <li class="menu-navigation__list-item">
+        {% assign customer_url = routes.account_login_url %}
+        {% assign customer_fallback_text = 'layout.customer.log_in' | t %}
+
+        {%- if customer -%}
+          {% assign customer_url = routes.account_url %}
+          {% assign customer_fallback_text = 'layout.customer.account' | t %}
+        {%- endif -%}
+
+        <a href="{{ customer_url }}" class="menu-navigation__item menu-navigation__item--link menu-navigation__item--account">
+          {% render 'icon-account' %}
+          {{ customer_fallback_text }}
+        </a>
+      </li>
+    {%- endif -%}
+  </ul>
+</nav>

@@ -1,0 +1,504 @@
+{%- liquid
+  case section.settings.list_size
+    when 'small'
+      assign product_limit = 6
+    when 'medium'
+      assign product_limit = 12
+    when 'large'
+      assign product_limit = 36
+  endcase
+-%}
+
+<section class="featured-collections" data-section-id="{{ section.id }}" data-section-type="featured-collections"{% if section.blocks.size == 1 %} data-single-collection="true"{% endif %}{% if settings.show_product_modal %} data-product-modal="true"{% endif %}{% if section.settings.quick_add %} data-quick-add="true"{% endif %}>
+  {%- if section.blocks.size > 0 -%}
+    <div class="featured-collections__header" data-sticky-element>
+      <div class="featured-collections__tabpanel scroller-parent">
+        <div class="featured-collections__tab-wrapper{% if section.blocks.size > 1 %} scroller-wrapper{% endif %}"{% if section.blocks.size > 1 %} data-scroller-wrapper{% endif %}>
+          {%- if section.blocks.size == 1 -%}
+            {%- assign collection = collections[section.blocks[0].settings.collection] -%}
+            <h2 class="featured-collections-tab__item featured-collections-tab__item--active featured-collections-tab__item--single" id="{{ block.id }}-tab" data-featured-collections-selected-tab {{ section.blocks[0].shopify_attributes }}>
+              {%- if collection == blank -%}
+                  <span class="featured-collections__item-title">{{- 'homepage.onboarding.collection_title' | t -}}</span>
+              {%- else -%}
+                <span class="featured-collections__item-title">{{- collection.title | escape -}}</span>
+                <sup class="featured-collections__product-count">{{- collection.products_count -}}<span class="visually-hidden">{{- 'sections.featured_collections.products' | t | prepend: ' ' -}}</span></sup>
+              {%- endif -%}
+            </h2>
+          {%- else -%}
+            <ul class="featured-collections__tablist scroller-content" role="tablist" aria-label="{{ 'sections.featured_collections.label' | t }}" data-scroller-content>
+              {%- for block in section.blocks -%}
+                {%- assign collection = collections[block.settings.collection] -%}
+                <li
+                  class="featured-collections-tab__item{% if forloop.first %} featured-collections-tab__item--active{% endif %}"
+                  id="{{ block.id }}-tab"
+                  role="tab"
+                  aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                  aria-controls="{{ block.id }}-tab-panel"
+                  tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+                  data-featured-collections-tab
+                  {% if forloop.first %} data-featured-collections-selected-tab{% endif %}
+                  data-collection-title="{{ collection.title }}"
+                  data-featured-collections-tab-number="{{ forloop.index0 }}"
+                  data-featured-collections-block-id="{{ block.id }}"
+                  {{ block.shopify_attributes }}>
+                  {%- if collection == blank -%}
+                    <span class="featured-collections__item-title">{{- 'homepage.onboarding.collection_title' | t -}}</span>
+                  {%- else -%}
+                    <span class="featured-collections__item-title">{{- collection.title | escape -}}</span>
+                    <sup class="featured-collections__product-count">{{- collection.products_count -}}<span class="visually-hidden">{{- 'sections.featured_collections.products' | t | prepend: ' ' -}}</span></sup>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+        <div class="featured-collections__gradient">
+        </div>
+        <button class="featured-collections__tabpanel-arrow scroller-arrow scroller-arrow--previous" aria-label="{{ 'sections.featured_collections.arrow_label' | t }}" aria-hidden="true" tabindex="-1" data-scroller-arrow data-scroller-arrow-direction="previous">
+          {% render 'icon-arrow-right' %}
+          {% render 'icon-chevron-right' %}
+        </button>
+        <button class="featured-collections__tabpanel-arrow scroller-arrow scroller-arrow--next" aria-label="{{ 'sections.featured_collections.arrow_label' | t }}" aria-hidden="true" tabindex="-1" data-scroller-arrow data-scroller-arrow-direction="next">
+          {% render 'icon-arrow-right' %}
+          {% render 'icon-chevron-right' %}
+        </button>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="featured-collections__wrapper" data-featured-collections-wrapper>
+    {%- for block in section.blocks -%}
+      {%- assign collection = collections[block.settings.collection] -%}
+      <div class="featured-collections__panel{% if forloop.first %} featured-collections__panel--active featured-collections__panel--visible{% endif %}"
+        role="tabpanel"
+        id="{{ block.id }}-tab-panel"
+        aria-labelledby="{{ block.id }}-tab"
+        data-featured-collections-tab-panel
+        data-collection-title="{{ collection.title }}"
+        {% unless collection == blank %}
+          {% if collection.products_count > product_limit %} data-view-more="true"{% endif %}
+        {% endunless %}>
+        <noscript>
+          <h2 class="featured-collections__title">
+            {%- if collection == blank -%}
+              <span class="featured-collections__item-title">{{- 'homepage.onboarding.collection_title' | t -}}</span>
+            {%- else -%}
+              <span class="featured-collections__item-title">{{- collection.title | escape -}}</span>
+              <sup class="featured-collections__product-count">{{- collection.products_count -}}<span class="visually-hidden">{{- 'sections.featured_collections.products' | t | prepend: ' ' -}}</span></sup>
+            {%- endif -%}
+          </h2>
+        </noscript>
+        <ul class="featured-collections__products{% if section.settings.image_style == 'circle' %} featured-collections__products--circle{% endif %}" role="list" data-view-more-content>
+          {%- for product in collection.products limit:product_limit -%}
+            <li class="featured-collections__item" data-view-more-item>
+              {% render 'product-card-list', product: product, show_vendor: false, show_form: section.settings.quick_add %}
+            </li>
+          {%- else -%}
+            {%- for i in (1..4) -%}
+              <li class="featured-collections__item">
+                {% render 'product-card-list' %}
+              </li>
+            {%- endfor -%}
+          {%- endfor -%}
+        </ul>
+        {%- unless collection == blank -%}
+          {%- if collection.products_count > product_limit -%}
+            <p class="visually-hidden" role="status" data-view-more-status-message="{{- 'sections.featured_collections.view_more_status' | t: item_count: '[item_count]', item_max: '[item_max]', collection_title: collection.title -}}" data-view-more-status>
+              {{- 'sections.featured_collections.view_more_status' | t: item_count: product_limit, item_max: collection.products_count, collection_title: collection.title -}}
+            </p>
+            {%- liquid
+              if section.settings.quick_add
+                assign view_more_url = collection.url | append: '?view=quickadd&page=[pagination]'
+              else
+                assign view_more_url = collection.url | append: '?section_id=collection-template&page=[pagination]'
+              endif
+            -%}
+            <button
+              class="featured-collections__view-more"
+              aria-label="{{ 'sections.featured_collections.view_more_full' | t: collection_title: collection.title }}"
+              data-view-more-button
+              data-view-more-step="36"
+              data-view-more-current="{{ product_limit }}"
+              data-view-more-max="{{ collection.products_count }}"
+              data-view-more-next="{{ view_more_url }}">
+              {{ 'sections.featured_collections.view_more' | t }}
+            </button>
+            <noscript>
+              <a href="{{ collection.url }}" class="featured-collections__view-more">
+                {{ 'sections.featured_collections.view_more' | t }}
+              </a>
+            </noscript>
+          {%- endif -%}
+        {%- endunless -%}
+      </div>
+    {%- else -%}
+      {{- 'homepage.onboarding.no_content' | t -}}
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": {
+    "cs": "Propagované kolekce",
+    "da": "Udvalgte kollektioner",
+    "de": "Vorgestellte Kategorien",
+    "en": "Featured collections",
+    "es": "Colecciones destacadas",
+    "fi": "Esittelyssä olevat kokoelmat",
+    "fr": "Collections en vedette",
+    "it": "Collezioni in evidenza",
+    "ja": "特集コレクション",
+    "ko": "추천 컬렉션",
+    "nb": "Utvalgte samlinger",
+    "nl": "Uitgelichte collecties",
+    "pl": "Polecane kolekcje",
+    "pt-BR": "Coleções em destaque",
+    "pt-PT": "Coleções em destaque",
+    "sv": "Utvalda produktserier",
+    "th": "คอลเลกชันแนะนำ",
+    "tr": "Öne çıkan koleksiyonlar",
+    "vi": "Bộ sưu tập nổi bật",
+    "zh-CN": "特色产品系列",
+    "zh-TW": "精選商品系列"
+  },
+  "blocks": [
+    {
+      "type": "collection",
+      "name": {
+        "cs": "Kolekce",
+        "da": "Kollektion",
+        "de": "Kategorie",
+        "en": "Collection",
+        "es": "Colección",
+        "fi": "Kokoelma",
+        "fr": "Collection",
+        "it": "Collezione",
+        "ja": "コレクション",
+        "ko": "컬렉션",
+        "nb": "Samling",
+        "nl": "Collectie",
+        "pl": "Kolekcja",
+        "pt-BR": "Coleção",
+        "pt-PT": "Coleção",
+        "sv": "Produktserie",
+        "th": "คอลเลกชัน",
+        "tr": "Koleksiyon",
+        "vi": "Bộ sưu tập",
+        "zh-CN": "产品系列",
+        "zh-TW": "商品系列"
+      },
+      "settings": [
+        {
+          "id": "collection",
+          "type": "collection",
+          "label": {
+            "cs": "Kolekce",
+            "da": "Kollektion",
+            "de": "Kategorie",
+            "en": "Collection",
+            "es": "Colección",
+            "fi": "Kokoelma",
+            "fr": "Collection",
+            "it": "Collezione",
+            "ja": "コレクション",
+            "ko": "컬렉션",
+            "nb": "Samling",
+            "nl": "Collectie",
+            "pl": "Kolekcja",
+            "pt-BR": "Coleção",
+            "pt-PT": "Coleção",
+            "sv": "Produktserie",
+            "th": "คอลเลกชัน",
+            "tr": "Koleksiyon",
+            "vi": "Bộ sưu tập",
+            "zh-CN": "产品系列",
+            "zh-TW": "商品系列"
+          }
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "select",
+      "id": "list_size",
+      "label": {
+        "cs": "Velikost seznamu kolekcí",
+        "da": "Størrelse på kollektionsliste",
+        "de": "Kategorielistengröße",
+        "en": "Collection list size",
+        "es": "Tamaño de lista de colecciones",
+        "fi": "Kokoelmaluettelon koko",
+        "fr": "Liste des tailles de la collection",
+        "it": "Dimensione elenco collezioni",
+        "ja": "コレクションリストのサイズ",
+        "ko": "컬렉션 목록 사이즈",
+        "nb": "Samlingslistestørrelse",
+        "nl": "Collectielijst maat",
+        "pl": "Rozmiar listy kolekcji",
+        "pt-BR": "Tamanho da lista de coleção",
+        "pt-PT": "Tamanho da lista de coleções",
+        "sv": "Liststorlek för produktserie",
+        "th": "ขนาดรายการคอลเลกชัน",
+        "tr": "Koleksiyon liste boyutu",
+        "vi": "Cỡ danh sách bộ sưu tập",
+        "zh-CN": "产品系列列表大小",
+        "zh-TW": "商品系列清單大小"
+      },
+      "options": [
+        {
+          "value": "small",
+          "label": {
+            "cs": "Malá",
+            "da": "Lille",
+            "de": "Klein",
+            "en": "Small",
+            "es": "Pequeña",
+            "fi": "Pieni",
+            "fr": "Small",
+            "it": "Piccolo",
+            "ja": "小",
+            "ko": "스몰",
+            "nb": "Liten",
+            "nl": "Small",
+            "pl": "Mały",
+            "pt-BR": "Pequeno",
+            "pt-PT": "Pequeno",
+            "sv": "Liten",
+            "th": "เล็ก",
+            "tr": "Small",
+            "vi": "Nhỏ",
+            "zh-CN": "小",
+            "zh-TW": "小型"
+          }
+        },
+        {
+          "value": "medium",
+          "label": {
+            "cs": "Střední",
+            "da": "Medium",
+            "de": "Mittel",
+            "en": "Medium",
+            "es": "Mediana",
+            "fi": "Keskisuuri",
+            "fr": "Medium",
+            "it": "Medium",
+            "ja": "中",
+            "ko": "보통",
+            "nb": "Middels",
+            "nl": "Medium",
+            "pl": "Średni",
+            "pt-BR": "Médio",
+            "pt-PT": "Médio",
+            "sv": "Medium",
+            "th": "ปานกลาง",
+            "tr": "Medium",
+            "vi": "Trung bình",
+            "zh-CN": "中等",
+            "zh-TW": "中等"
+          }
+        },
+        {
+          "value": "large",
+          "label": {
+            "cs": "Velká",
+            "da": "Stor",
+            "de": "Groß",
+            "en": "Large",
+            "es": "Grande",
+            "fi": "Suuri",
+            "fr": "Large",
+            "it": "Grande",
+            "ja": "大",
+            "ko": "라지",
+            "nb": "Stor",
+            "nl": "Large",
+            "pl": "Duży",
+            "pt-BR": "Grande",
+            "pt-PT": "Grande",
+            "sv": "Stor",
+            "th": "ใหญ่",
+            "tr": "Large",
+            "vi": "Lớn",
+            "zh-CN": "大",
+            "zh-TW": "大型"
+          }
+        }
+      ],
+      "default": "small"
+    },
+    {
+      "type": "select",
+      "id": "image_style",
+      "label": {
+        "cs": "Styl obrázku",
+        "da": "Billedstil",
+        "de": "Bildstil",
+        "en": "Image style",
+        "es": "Estilo de imagen",
+        "fi": "Kuvan tyyli",
+        "fr": "Style d'image",
+        "it": "Stile immagine",
+        "ja": "画像スタイル",
+        "ko": "이미지 스타일",
+        "nb": "Bildestil",
+        "nl": "Afbeeldingsstijl",
+        "pl": "Styl obrazu",
+        "pt-BR": "Estilo da imagem",
+        "pt-PT": "Estilo da imagem",
+        "sv": "Bildstil",
+        "th": "รูปแบบรูปภาพ",
+        "tr": "Görsel stili",
+        "vi": "Kiểu hình ảnh",
+        "zh-CN": "图片样式",
+        "zh-TW": "圖片樣式"
+      },
+      "options": [
+        {
+          "value": "square",
+          "label": {
+            "cs": "Čtverec",
+            "da": "Square",
+            "de": "Square",
+            "en": "Square",
+            "es": "Cuadrado",
+            "fi": "Square",
+            "fr": "Carré",
+            "it": "Quadrato",
+            "ja": "正方形",
+            "ko": "정사각형",
+            "nb": "Firkant",
+            "nl": "Square",
+            "pl": "Kwadrat",
+            "pt-BR": "Quadrado",
+            "pt-PT": "Square",
+            "sv": "Square",
+            "th": "สี่เหลี่ยม",
+            "tr": "Kare",
+            "vi": "Vuông",
+            "zh-CN": "方形",
+            "zh-TW": "Square"
+          }
+        },
+        {
+          "value": "circle",
+          "label": {
+            "cs": "Kruh",
+            "da": "Cirkel",
+            "de": "Kreis",
+            "en": "Circle",
+            "es": "Círculo",
+            "fi": "Ympyrä",
+            "fr": "Cercle",
+            "it": "Cerchio",
+            "ja": "丸",
+            "ko": "서클",
+            "nb": "Sirkel",
+            "nl": "Cirkel",
+            "pl": "Koło",
+            "pt-BR": "Círculo",
+            "pt-PT": "Círculo",
+            "sv": "Cirkel",
+            "th": "วงกลม",
+            "tr": "Yuvarlak",
+            "vi": "Tròn",
+            "zh-CN": "圆形",
+            "zh-TW": "圓形"
+          }
+        }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "checkbox",
+      "id": "quick_add",
+      "label": {
+        "cs": "Povolit tlačítko Rychlý nákup",
+        "da": "Aktivér knappen \"Hurtigt køb\"",
+        "de": "\"Quick Buy\"-Schaltfläche aktivieren",
+        "en": "Enable ‘Quick buy’ button",
+        "es": "Activar botón ‘Compra rápida’",
+        "fi": "Ota \"Pikaosto\"-painike käyttöön",
+        "fr": "Activer le bouton « Achat rapide »",
+        "it": "Abilita il pulsante ‘Acquisto rapido’",
+        "ja": "「クイック購入」ボタンを有効にする",
+        "ko": "'빠른 구매' 버튼 활성화",
+        "nb": "Aktiver 'Hurtigkjøp'-knapp",
+        "nl": "Knop 'Snel kopen' inschakelen",
+        "pl": "Włącz przycisk 'Szybki zakup'",
+        "pt-BR": "Habilitar botão \"Compra rápida\"",
+        "pt-PT": "Ativar o botão \"Compra rápida\"",
+        "sv": "Aktivera knappen för \"Snabbköp\"",
+        "th": "เปิดใช้ปุ่ม \"การซื้อด่วน\"",
+        "tr": "\"Hızlı satın alma\" düğmesini etkinleştirin",
+        "vi": "Bật nút \"Quick buy\" (Mua nhanh)",
+        "zh-CN": "启用“快速购买”按钮",
+        "zh-TW": "啟用「快速購買」按鈕"
+      },
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": {
+        "cs": "Propagované kolekce",
+        "da": "Udvalgte kollektioner",
+        "de": "Vorgestellte Kategorien",
+        "en": "Featured collections",
+        "es": "Colecciones destacadas",
+        "fi": "Esittelyssä olevat kokoelmat",
+        "fr": "Collections en vedette",
+        "it": "Collezioni in evidenza",
+        "ja": "特集コレクション",
+        "ko": "추천 컬렉션",
+        "nb": "Utvalgte samlinger",
+        "nl": "Uitgelichte collecties",
+        "pl": "Polecane kolekcje",
+        "pt-BR": "Coleções em destaque",
+        "pt-PT": "Coleções em destaque",
+        "sv": "Utvalda produktserier",
+        "th": "คอลเลกชันแนะนำ",
+        "tr": "Öne çıkan koleksiyonlar",
+        "vi": "Bộ sưu tập nổi bật",
+        "zh-CN": "特色产品系列",
+        "zh-TW": "精選商品系列"
+      },
+      "category": {
+        "cs": "Kolekce",
+        "da": "Kollektion",
+        "de": "Kategorie",
+        "en": "Collection",
+        "es": "Colección",
+        "fi": "Kokoelma",
+        "fr": "Collection",
+        "it": "Collezione",
+        "ja": "コレクション",
+        "ko": "컬렉션",
+        "nb": "Samling",
+        "nl": "Collectie",
+        "pl": "Kolekcja",
+        "pt-BR": "Coleção",
+        "pt-PT": "Coleção",
+        "sv": "Produktserie",
+        "th": "คอลเลกชัน",
+        "tr": "Koleksiyon",
+        "vi": "Bộ sưu tập",
+        "zh-CN": "产品系列",
+        "zh-TW": "商品系列"
+      },
+      "blocks": [
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,373 @@
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign featured_media = current_variant.featured_media | default: product.featured_media
+  assign section_onboarding = false
+-%}
+
+<div class="product product--template{% if featured_media == null and section_onboarding == false %} product--no-media{% endif %}"
+    data-section-id="{{ section.id }}"
+    data-section-type="product"
+    data-product-template
+    {% if section.settings.show_quantity_selector %} data-show-quantity-selector="true"{% endif %}>
+
+  <div>
+    <div class="product-content-wrapper">
+      <p class="product__collection" data-product-collection-title-wrapper>
+        <span class="visually-hidden">{{ 'products.product.collection' | t }}:</span>
+        <span data-product-collection-title></span>
+      </p>
+
+      <div class="product__content product__content--template product__media-wrapper"
+        {% if product.media.size > 1 %} data-media data-media-click-nav="true" role="region" data-label="{{ 'products.slider.media_gallery' | t }}"{% endif %}>
+
+        {%- if featured_media -%}
+          <div class="product__gallery">
+            <div class="gallery gallery--stacked" id="Gallery-{{ section.id }}" data-media-strip-wrapper>
+              <div class="gallery__strip" data-media-strip>
+                {%- for media in product.media -%}
+                  {%- if featured_media == media -%}
+                    {%- assign starting_index = forloop.index -%}
+                  {%- endif -%}
+                  <div class="gallery__image-wrapper gallery__image-wrapper--scale"
+                  {% if product.media.size > 1 %}
+                    data-media-wrapper
+                    data-media-label="{{ 'products.slider.media_index_of_total' | t: index: forloop.index, indexTotal: forloop.length }}"{% endif %}>
+
+                    <img
+                      {% if featured_media == media %}
+                        srcset="{% if media.preview_image.width >= 311 %}{{ media.preview_image | img_url: '311x' }} 311w,{% endif %}
+                        {% if media.preview_image.width >= 622 %}{{ media.preview_image | img_url: '622x' }} 622w,{% endif %}
+                        {% if media.preview_image.width >= 503 %}{{ media.preview_image | img_url: '503x' }} 503w,{% endif %}
+                        {% if media.preview_image.width >= 1006 %}{{ media.preview_image | img_url: '1006x' }} 1006w,{% endif %}
+                        {% if media.preview_image.width >= 685 %}{{ media.preview_image | img_url: '685x' }} 685w,{% endif %}
+                        {% if media.preview_image.width >= 1370 %}{{ media.preview_image | img_url: '1370x' }} 1370w{% endif %}"
+                      {% else %}
+                        data-srcset="{% if media.preview_image.width >= 311 %}{{ media.preview_image | img_url: '311x' }} 311w,{% endif %}
+                        {% if media.preview_image.width >= 622 %}{{ media.preview_image | img_url: '622x' }} 622w,{% endif %}
+                        {% if media.preview_image.width >= 503 %}{{ media.preview_image | img_url: '503x' }} 503w,{% endif %}
+                        {% if media.preview_image.width >= 1006 %}{{ media.preview_image | img_url: '1006x' }} 1006w,{% endif %}
+                        {% if media.preview_image.width >= 685 %}{{ media.preview_image | img_url: '685x' }} 685w,{% endif %}
+                        {% if media.preview_image.width >= 1370 %}{{ media.preview_image | img_url: '1370x' }} 1370w{% endif %}"
+                      {% endif %}
+
+                      {% if featured_media == media %}
+                        src="{{ media | img_url: '503x503' }}"
+                      {% else %}
+                        data-src="{{ media | img_url: '503x503' }}"
+                      {% endif %}
+
+                      sizes="(min-width: 1200px) calc((1200px - 19.5rem) / 2), (min-width: 750px) calc((100vw - 19.5rem) / 2), calc(100vw - 6.4rem)"
+                      width="{{ media.preview_image.width }}"
+                      height="{{ media.preview_image.height }}"
+                      loading="lazy"
+                      class="gallery__image{% if featured_media == media %} is-active{% endif %}"
+                      data-media-id="{{ media.id }}"
+                      data-media-image
+                      data-media-index="{{ forloop.index }}"
+                      alt="{{ media.preview_image.alt | escape }}">
+                  </div>
+                {%- endfor -%}
+              </div>
+
+              <noscript>
+                <img
+                  srcset="{% if featured_media.preview_image.width >= 311 %}{{ featured_media.preview_image | img_url: '311x' }} 311w,{% endif %}
+                  {% if featured_media.preview_image.width >= 622 %}{{ featured_media.preview_image | img_url: '622x' }} 622w,{% endif %}
+                  {% if featured_media.preview_image.width >= 503 %}{{ featured_media.preview_image | img_url: '503x' }} 503w,{% endif %}
+                  {% if featured_media.preview_image.width >= 1006 %}{{ featured_media.preview_image | img_url: '1006x' }} 1006w,{% endif %}
+                  {% if featured_media.preview_image.width >= 685 %}{{ featured_media.preview_image | img_url: '685x' }} 685w,{% endif %}
+                  {% if featured_media.preview_image.width >= 1370 %}{{ featured_media.preview_image | img_url: '1370x' }} 1370w{% endif %}"
+                  sizes="(min-width: 1200px) calc((1200px - 19.5rem) / 2), (min-width: 750px) calc((100vw - 19.5rem) / 2), calc(100vw - 6.4rem)"
+                  src="{{ featured_media | img_url: '503x503' }}"
+                  width="{{ featured_media.preview_image.width }}"
+                  height="{{ featured_media.preview_image.height }}"
+                  class="gallery__image--no-js"
+                  loading="lazy"
+                  alt="{{ featured_media.preview_image.alt | escape }}">
+                </noscript>
+            </div>
+          </div>
+
+          {%- if product.media.size > 1 -%}
+            <div class="gallery-indicator gallery-indicator--stacked">
+              <button class="gallery-indicator__arrow gallery-indicator__arrow--previous"
+                data-media-arrow-previous aria-label="{{ 'products.slider.media_previous' | t }}"
+                aria-controls="Gallery-{{ section.id }}">
+
+                {%- render 'icon-chevron-right' -%}
+              </button>
+
+              <div class="gallery-indicator__count"
+                data-media-indicator-label>
+
+                <span data-media-current>{{ starting_index }}</span>
+                <span aria-hidden="true">/</span>
+                {{ product.media.size }}
+              </div>
+
+              <button class="gallery-indicator__arrow"
+                data-media-arrow-next aria-label="{{ 'products.slider.media_next' | t }}"
+                aria-controls="Gallery-{{ section.id }}">
+
+                {%- render 'icon-chevron-right' -%}
+              </button>
+            </div>
+
+            <div class="visually-hidden"
+              role="status"
+              aria-hidden="true"
+              data-media-liveregion-message="{{- 'products.slider.media_indicator' | t: index: '[index]', indexTotal: '[indexTotal]' -}}"
+              data-media-liveregion >
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+
+  <div class="product__content product__content--template product__content--information">
+    <div class="product__sticky">
+      <p class="product__collection product__collection--desktop" data-product-collection-title-wrapper>
+        <span class="visually-hidden">{{ 'products.product.collection' | t }}:</span>
+        <span data-product-collection-title></span>
+      </p>
+
+      <h1 id="ProductHeading" class="product__title product__title--template">{{ product.title | escape }}</h1>
+      <h2 id="ProductHeadingModal" class="product__title product__title--template product__title--modal">{{ product.title | escape }}</h2>
+
+      {% render 'product-price', variant: current_variant, product: product, show_vendor: section.settings.show_vendor %}
+
+      {%- if shop.taxes_included or shop.shipping_policy.body != blank -%}
+        <div class="product__policies product__policies--template" data-product-policies>
+          {%- if shop.taxes_included -%}
+            {{ 'products.product.include_taxes' | t }}
+          {%- endif -%}
+          {%- if shop.shipping_policy.body != blank -%}
+            {{ 'products.product.shipping_policy_html' | t: link: shop.shipping_policy.url }}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {% render 'product-form',
+        section_id: section.id,
+        product: product,
+        current_variant: current_variant,
+        enable_dynamic_checkout: section.settings.enable_dynamic_checkout,
+        show_quantity_selector: section.settings.show_quantity_selector,
+        show_success_message: true
+      %}
+
+      {%- if product.description != blank -%}
+        <div class="product__description rte">
+          {{ product.description }}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_social_buttons -%}
+        {% render 'social-sharing', share_title: product.title, share_permalink: product.url, share_image: product %}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+<script type="application/ld+json">
+  {
+    "@context": "http://schema.org/",
+    "@type": "Product",
+    "name": {{ product.title | json }},
+    "url": {{ shop.url | append: product.url | json }},
+    {%- if featured_media -%}
+      {%- assign media_size = featured_media.preview_image.width | append: 'x' -%}
+      "image": [
+        {{ product.featured_media | img_url: media_size | prepend: "https:" | json }}
+      ],
+    {%- endif -%}
+    "description": {{ product.description | strip_html | json }},
+    {%- if current_variant.sku != blank -%}
+      "sku": {{ current_variant.sku | json }},
+    {%- endif -%}
+    "brand": {
+      "@type": "Thing",
+      "name": {{ product.vendor | json }}
+    },
+    "offers": [
+      {%- for variant in product.variants -%}
+        {
+          "@type" : "Offer",
+          {%- if variant.sku != blank -%}
+            "sku": {{ variant.sku | json }},
+          {%- endif -%}
+          "availability" : "http://schema.org/{% if variant.available %}InStock{% else %}OutOfStock{% endif %}",
+          "price" : {{ variant.price | divided_by: 100.00 | json }},
+          "priceCurrency" : {{ cart.currency.iso_code | json }},
+          "url" : {{ shop.url | append: variant.url | json }}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  }
+</script>
+
+{% schema %}
+{
+  "name": {
+    "cs": "Produkt",
+    "da": "Produkt",
+    "de": "Produkt",
+    "en": "Product",
+    "es": "Producto",
+    "fi": "Tuote",
+    "fr": "Produit",
+    "it": "Prodotto",
+    "ja": "商品",
+    "ko": "제품",
+    "nb": "Produkt",
+    "nl": "Product",
+    "pl": "Produkt",
+    "pt-BR": "Produto",
+    "pt-PT": "Produto",
+    "sv": "Produkt",
+    "th": "สินค้า",
+    "tr": "Ürün",
+    "vi": "Sản phẩm",
+    "zh-CN": "产品",
+    "zh-TW": "產品"
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_quantity_selector",
+      "label": {
+        "cs": "Zobrazit výběr množství",
+        "da": "Vis antalsvælger",
+        "de": "Quantitäts-Auswahl anzeigen",
+        "en": "Show quantity selector",
+        "es": "Mostrar selector de cantidad",
+        "fi": "Näytä määrän valitsin",
+        "fr": "Afficher le sélecteur de quantité",
+        "it": "Mostra selettore quantità",
+        "ja": "数量セレクターを表示する",
+        "ko": "수량 선택기 표시",
+        "nb": "Vis mengdevelger",
+        "nl": "Hoeveelheidskiezer weergeven",
+        "pl": "Pokaż selektor ilości",
+        "pt-BR": "Exiba um seletor de quantidade",
+        "pt-PT": "Mostrar seletor de quantidade",
+        "sv": "Visa kvantitetsväljare",
+        "th": "แสดงตัวเลือกจำนวน",
+        "tr": "Adet seçiciyi göster",
+        "vi": "Hiển thị hộp chọn số lượng",
+        "zh-CN": "显示数量选择器",
+        "zh-TW": "顯示數量選擇器"
+      },
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": {
+        "cs": "Zobrazit dodavatele",
+        "da": "Vis forhandler",
+        "de": "Lieferanten anzeigen",
+        "en": "Show vendor",
+        "es": "Mostrar proveedor",
+        "fi": "Näytä myyjä",
+        "fr": "Afficher les vendeurs",
+        "it": "Mostra fornitore",
+        "ja": "販売元を表示する",
+        "ko": "공급업체 표시",
+        "nb": "Vis leverandør",
+        "nl": "Leverancier weergeven",
+        "pl": "Pokaż dostawcę",
+        "pt-BR": "Exibir fornecedor",
+        "pt-PT": "Mostrar fornecedor",
+        "sv": "Visa leverantör",
+        "th": "แสดงผู้ขาย",
+        "tr": "Satıcıyı göster",
+        "vi": "Hiển thị nhà cung cấp",
+        "zh-CN": "显示厂商",
+        "zh-TW": "顯示廠商"
+      },
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_dynamic_checkout",
+      "label": {
+        "cs": "Zobrazit dynamické tlačítko pokladny",
+        "da": "Vis dynamisk betalingsknap",
+        "de": "Dynamischen Checkout Button anzeigen",
+        "en": "Show dynamic checkout button",
+        "es": "Mostrar botón de pago dinámico",
+        "fi": "Näytä dynaaminen kassapainike",
+        "fr": "Afficher le bouton de paiement dynamique",
+        "it": "Mostra pulsante di check-out dinamico",
+        "ja": "動的チェックアウトボタンを表示する",
+        "ko": "동적 결제 버튼 표시",
+        "nb": "Vis dynamisk knapp for å gå til kassen",
+        "nl": "Dynamische betaalknop weergeven",
+        "pl": "Pokaż dynamiczny przycisk realizacji zakupu",
+        "pt-BR": "Exibir botão de checkout dinâmico",
+        "pt-PT": "Mostrar o botão dinâmico de finalização da compra",
+        "sv": "Visa dynamiska utcheckningsknappar",
+        "th": "แสดงปุ่มชำระเงินแบบไดนามิก",
+        "tr": "Dinamik ödeme düğmeleri göster",
+        "vi": "Hiển thị nút thanh toán động",
+        "zh-CN": "显示动态结账按钮",
+        "zh-TW": "顯示動態結帳按鈕"
+      },
+      "info": {
+        "cs": "Každý zákazník uvidí platební metodu, kterou ze všech metod dostupných v obchodě (například PayPal nebo Apple Pay) nejvíce preferuje. [Další informace](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "da": "Den enkelte kunde vil se sin foretrukne betalingsmetode blandt dem, der er tilgængelige i din butik, f.eks. PayPal eller Apple Pay. [Få mere at vide](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "de": "Jeder Kunde sieht seine bevorzugte Zahlungsmethode aus den in Ihrem Shop verfügbaren Zahlungsmethoden wie PayPal oder Apple Pay. [Mehr Informationen](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "en": "Each customer will see their preferred payment method from those available on your store, such as PayPal or Apple Pay. [Learn more](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "es": "Cada cliente verá su forma de pago preferida entre las disponibles en tu tienda, como PayPal o Apple Pay. [Más información](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "fi": "Kukin asiakas näkee ensisijaisen valintansa kauppasi tarjoamista maksutavoista, esim. PayPal tai Apple Pay. [Lisätietoja](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "fr": "Chaque client verra son moyen de paiement préféré parmi ceux qui sont proposés sur votre boutique, tels que PayPal ou Apple Pay. [En savoir plus](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "it": "Ogni cliente vedrà il suo metodo di pagamento preferito tra quelli disponibili nel tuo negozio, come PayPal o Apple Pay. [Maggiori informazioni](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "ja": "PayPalやApple Payなど、ストアで利用可能な希望の決済方法がお客様に表示されます。[詳しくはこちら](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "ko": "각 고객은 PayPal 또는 Apple Pay와 같이 스토어에서 사용 가능한 지불 방법을 확인할 수 있습니다. [자세히 알아보기](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "nb": "Hver enkelt kunde vil se sin foretrukne betalingsmåte blant de som er tilgjengelig i butikken din, som PayPal eller Apple Pay. [Finn ut mer](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "nl": "Elke klant ziet zijn of haar beschikbare voorkeursmethode om af te rekenen, zoals PayPal of Apple Pay. [Meer informatie](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "pl": "Każdy klient będzie widział swoją preferowaną metodę płatności wśród metod dostępnych w Twoim sklepie, takich jak PayPal lub Apple Pay. [Dowiedz się więcej ](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "pt-BR": "Cada cliente verá a forma de pagamento preferencial dele dentre as disponíveis na loja, como PayPal ou Apple Pay. [Saiba mais](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "pt-PT": "Cada cliente irá ver o seu método de pagamento preferido entre os disponíveis na loja, como o PayPal ou Apple Pay. [Saiba mais](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "sv": "Varje kund kommer att se den föredragna betalningsmetoden från de som finns tillgängliga i din butik, till exempel PayPal eller Apple Pay. [Läs mer](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "th": "ลูกค้าแต่ละรายจะเห็นวิธีการชำระเงินที่ต้องการจากวิธีที่ใช้ได้ในร้านค้าของคุณ เช่น PayPal หรือ Apple Pay [ดูข้อมูลเพิ่มเติม](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "tr": "Her müşteri, mağazanız sunulanlar arasından tercih ettikleri ödeme yöntemini görür (ör. PayPal veya Apple Pay). [Daha fazla bilgi edinin](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "vi": "Mỗi khách hàng sẽ thấy phương thức thanh toán ưu tiên trong những phương thức thanh toán được hỗ trợ tại cửa hàng như PayPal hoặc Apple Pay. [Tìm hiểu thêm](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "zh-CN": "每位客户都可在您商店提供的付款方式中看到他们的首选付款方式，例如 PayPal 或 Apple Pay。[了解详细信息](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+        "zh-TW": "每位顧客都可以在您商店內開放使用的付款方式中看見他們偏好使用的方式，如 PayPal、Apple Pay 等。[深入瞭解](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)"
+      },
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_buttons",
+      "label": {
+        "cs": "Zobrazit tlačítka pro sdílení na sociálních sítích",
+        "da": "Vis knapper til deling på sociale medier",
+        "de": "Social-Sharing-Schaltflächen anzeigen",
+        "en": "Show social sharing buttons",
+        "es": "Mostrar botones para compartir en redes sociales",
+        "fi": "Näytä sosiaalisen median jakamispainikkeet",
+        "fr": "Affichez les boutons de partage sur les médias sociaux",
+        "it": "Mostra i pulsanti per la condivisione sui social",
+        "ja": "ソーシャルメディアでの共有ボタンを表示する",
+        "ko": "소셜 공유 버튼 표시",
+        "nb": "Vis knapper for deling på sosiale medier",
+        "nl": "Knoppen voor sociaal delen weergeven",
+        "pl": "Pokaż przyciski udostępniania w mediach społecznościowych",
+        "pt-BR": "Exibir botões de compartilhamento em redes sociais",
+        "pt-PT": "Mostrar botões de partilha nas redes sociais",
+        "sv": "Visa knappar för delning i sociala medier",
+        "th": "แสดงปุ่มสำหรับแชร์ลงโซเชียล",
+        "tr": "Sosyal medya paylaşım düğmelerini göster",
+        "vi": "Hiển thị nút chia sẻ qua mạng xã hội",
+        "zh-CN": "显示社交分享按钮",
+        "zh-TW": "顯示社群分享按鈕"
+      },
+      "default": true
+    }
+  ]
+}
+{% endschema %}

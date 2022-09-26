@@ -1,0 +1,26 @@
+<div id="SearchDrawer"
+	class="stage critical-hidden"
+	role="dialog"
+  aria-modal="true"
+	data-popup-stage="search">
+	<div class="stage__overlay" data-popup-close="search"></div>
+	<div class="search-drawer search" data-popup="search">
+		<div class="search-wrapper">
+			<form action="{{ routes.search_url }}" class="search__form" method="get" role="search" data-form>
+				<div class="search__form-input-wrapper form__input-wrapper" data-form-input-wrapper>
+					<label class="search__form-input-label search__form-input-label--drawer form__input-label" for="q" aria-hidden="true">{{ 'general.search.search' | t }}</label>
+					<input class="search__form-input search__form-input--drawer form__input" type="search" name="q" value="{{ search.terms | escape }}" data-popup-focus="search" required>
+				</div>
+
+				<button class="search__form-button search__form-button--drawer search-submit" type="submit">
+					{% render 'icon-search' %}
+					<span class="icon-fallback-text">{{ 'general.search.search' | t }}</span>
+				</button>
+				<button class="search__form-button search__form-button--drawer search-close" type="button" data-popup-close="search">
+					{% render 'icon-close' %}
+					<span class="icon-fallback-text">{{ 'general.search.close' | t }}</span>
+				</button>
+			</form>
+		</div>
+	</div>
+</div>

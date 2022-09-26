@@ -1,0 +1,40 @@
+<div class="customer">
+  <div class="customer__heading-wrapper">
+    <h1 class="customer__heading">{{ 'customer.activate_account.title' | t }}</h1>
+    <p>{{ 'customer.activate_account.subtext' | t }}</p>
+  </div>
+
+  {%- form 'activate_customer_password', class: 'form', data-form: '' -%}
+    {%- if form.errors -%}
+      <div class="form-status-message form-status-message--error">
+        <h2 class="form-status-message__heading" tabindex="-1" data-form-status>
+          {{ 'contact.form.error_heading' | t }}
+        </h2>
+        {{ form.errors | default_errors }}
+      </div>
+    {%- endif -%}
+
+    <div class="form__input-wrapper{% if form.errors contains 'form' %} form__input-wrapper--error{% endif %}" data-form-input-wrapper>
+      <label for="CustomerPassword" class="form__input-label">{{ 'customer.activate_account.password' | t }}</label>
+      <input
+        type="password"
+        value=""
+        name="customer[password]"
+        id="CustomerPassword"
+        class="form__input">
+    </div>
+
+    <div class="form__input-wrapper{% if form.errors contains 'form' %} form__input-wrapper--error{% endif %}" data-form-input-wrapper>
+      <label for="CustomerPasswordConfirmation" class="form__input-label">{{ 'customer.activate_account.password_confirm' | t }}</label>
+      <input
+        type="password"
+        value=""
+        name="customer[password_confirmation]"
+        id="CustomerPasswordConfirmation"
+        class="form__input">
+    </div>
+
+    <input type="submit" class="customer__button" value="{{ 'customer.activate_account.submit' | t }}">
+    <input type="submit" class="customer__button" name="decline" value="{{ 'customer.activate_account.cancel' | t }}">
+  {%- endform -%}
+</div>

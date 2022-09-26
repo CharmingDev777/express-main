@@ -1,0 +1,53 @@
+{% comment %}
+    Renders a collection card
+
+    Accepts:
+    - collection: {Object} Collection Liquid object (required)
+    - keep_image_ratio: {Boolean} Keep the image ratio (optional)
+
+    Usage:
+    {% render 'collection-card',
+      collection: collection,
+      keep_image_ratio: block.settings.keep_image_ratio
+    %}
+{% endcomment %}
+
+{%- liquid
+  assign onboarding_title = 'homepage.onboarding.collection_title' | t  
+
+  unless collection == empty    
+    assign collection_image = collection.image | default: collection.products.first.featured_media.preview_image 
+
+   else
+    assign onboarding = true
+    assign onboarding_title = 'homepage.onboarding.collection_title' | t
+
+  endunless 
+-%}
+
+<a href="{{ collection.url | default: '#' }}" class="collection-card">
+  {%- unless onboarding -%}
+    {%- if collection_image != blank -%}
+      <div class="collection-card__image-container{% unless keep_image_ratio %} collection-card__image-container--square{% endunless %}">
+        <img srcset="{% if collection_image.width >= 311 %}{{ collection_image | img_url: '311x' }} 311w,{% endif %}
+          {% if collection_image.width >= 622 %}{{ collection_image | img_url: '622x' }} 622w,{% endif %}
+          {% if collection_image.width >= 503 %}{{ collection_image | img_url: '503x' }} 503w,{% endif %}
+          {% if collection_image.width >= 1006 %}{{ collection_image | img_url: '1006x' }} 1006w,{% endif %}
+          {% if collection_image.width >= 685 %}{{ collection_image | img_url: '685x' }} 685w,{% endif %}
+          {% if collection_image.width >= 1370 %}{{ collection_image | img_url: '1370x' }} 1370w{% endif %}"
+          sizes="(min-width: 1200px) 1080px, (min-width: 750px) calc(100vw - 8rem), calc(100vw - 6.4rem)"
+          src="{{ collection_image | img_url: '1080x' }}"
+          width="{{ collection_image.width }}"
+          height="{{ collection_image.height }}"
+          loading="lazy"
+          class="collection-card__image{% unless keep_image_ratio %} collection-card__image--square{% endunless %}"
+          alt="">
+      </div>
+    {%- endif -%}
+  {%- else -%}
+    {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+  {%- endunless -%}
+    <div class="collection-card__title{% unless onboarding or collection_image != blank %} collection-card--no-image{% endunless %}"> 
+      {{ collection.title | default: onboarding_title | escape }} 
+    </div>  
+</a>

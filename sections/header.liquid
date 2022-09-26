@@ -1,0 +1,569 @@
+<div class="header-wrapper" data-section-id="{{ section.id }}" data-section-type="header">
+  {%- if section.settings.announcement_bar_enabled -%}
+    {%- style -%}
+      .announcement-bar {
+        background-color: {{ section.settings.announcement_bar_color_background }};
+        border-bottom: 1px solid {{ section.settings.announcement_bar_color_text }};
+      }
+
+      .announcement-bar__message {
+        color: {{ section.settings.announcement_bar_color_text }};
+      }
+
+      {%- if section.settings.enable_secondary_background -%}
+        .search-drawer {
+          background-color: var(--color-secondary-background);
+        }
+
+        .search__form-button--drawer, .search__form-input-label--drawer, .search__form-input--drawer.form__input {
+          color: var(--color-secondary-background-text);
+        }
+
+        .search__form-input--drawer.form__input{
+          border-color: var(--color-secondary-background-text);
+        }
+
+        .search__form-button--drawer .icon-close {
+          stroke: var(--color-secondary-background-text);
+        }
+      {%- endif -%}
+    {%- endstyle -%}
+
+    <div class="announcement-bar" role="region" aria-label="{{ 'sections.header.announcement' | t }}" data-announcement-bar>
+      <p class="announcement-bar__message">{{ section.settings.announcement_bar_text }}</p>
+    </div>
+  {%- endif -%}
+
+  <header class="header{% if section.settings.enable_secondary_background %} header--secondary-background{% endif %}" role="banner" data-header>
+    {%- if request.page_type == 'index' -%}
+      <h1 class="header__heading">
+    {%- else -%}
+      <div class="header__heading">
+    {%- endif -%}
+      <a href="{{ routes.root_url }}" class="header__logo{% if section.settings.logo == blank %} header__logo--text{% endif %}" data-header-logo>
+        {%- if section.settings.logo != blank -%}
+          {%- style -%}
+            .header__logo-image {
+              max-width: {{ section.settings.logo_max_width }}px;
+            }
+          {%- endstyle -%}
+
+          {% capture image_size %}{{ section.settings.logo_max_width }}x{% endcapture %}
+          <img srcset="{{ section.settings.logo | img_url: image_size }} 1x, {{ section.settings.logo | img_url: image_size, scale: 2 }} 2x"
+            src="{{ section.settings.logo | img_url: image_size }}"
+            loading="lazy"
+            class="header__logo-image"
+            alt="{{ section.settings.logo.alt | default: shop.name }}"
+            data-logo-image>
+        {% else %}
+          {{ shop.name }}
+        {% endif %}
+      </a>
+    {%- if request.page_type == 'index' %}
+      </h1>
+    {%- else -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.main_menu != blank -%}
+      {% render 'menu-navigation', menu: linklists[section.settings.main_menu], is_mobile: false %}
+    {%- endif -%}
+
+    <div class="header__icons">
+      {%- if section.settings.show_search -%}
+        <button type="button"
+          class="header__icon header__icon--button header__icon--search-button"
+          aria-controls="SearchDrawer"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          data-popup-open="search"
+          data-search-toggle
+          data-header-icon
+        >
+          {% render 'icon-search' %}
+          <span class="visually-hidden">{{ 'general.search.search' | t }}</span>
+        </button>
+
+        <a href="{{ routes.search_url }}" class="header__icon header__icon--search-link" data-header-icon>
+          {% render 'icon-search' %}
+          <span class="icon-fallback-text">{{ 'general.search.search' | t }}</span>
+        </a>
+      {%- endif -%}
+
+      {%- if shop.customer_accounts_enabled -%}
+        {% assign customer_url = routes.account_login_url %}
+        {% assign customer_fallback_text = 'layout.customer.log_in' | t %}
+
+        {%- if customer -%}
+          {% assign customer_url = routes.account_url %}
+          {% assign customer_fallback_text = 'layout.customer.account' | t %}
+        {%- endif -%}
+
+        <a href="{{ customer_url }}" class="header__icon header__icon--accounts-link" data-header-icon>
+          {% render 'icon-account' %}
+          <span class="icon-fallback-text">{{ customer_fallback_text }}</span>
+        </a>
+      {%- endif -%}
+
+      <a href="{{ routes.cart_url }}"
+        class="header__icon header__icon--button header__icon--cart-button-link{% unless settings.show_cart_drawer %} header__icon--cart-visible{% endunless %}"
+        data-header-icon
+      >
+        {% render 'icon-cart' %}
+        <span class="icon-fallback-text">{{ 'layout.cart.title' | t }}</span>
+
+        <div class="header__cart-count-bubble{% if cart.item_count == 0 %} hidden{% endif %}" data-cart-count-bubble>
+            <span class="icon-fallback-text" data-cart-count-text>{{ 'layout.cart.items_count' | t }}</span>
+            <span data-cart-count>
+              {%- if cart.item_count > 99 -%}
+                99+
+              {%- else -%}
+                {{ cart.item_count }}
+              {%- endif -%}
+            </span>
+          </div>
+      </a>
+
+      {%- if settings.show_cart_drawer -%}
+        <button class="header__icon header__icon--button header__icon--cart"
+          data-header-icon
+          aria-controls="CartDrawer"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          data-popup-open="cart">
+
+          {% render 'icon-cart' %}
+          <span class="icon-fallback-text">{{ 'layout.cart.title' | t }}</span>
+
+          <div class="header__cart-count-bubble{% if cart.item_count == 0 %} hidden{% endif %}" data-cart-count-bubble>
+            <span class="icon-fallback-text" data-cart-count-text>{{ 'layout.cart.items_count' | t }}</span>
+            <span data-cart-count>
+              {%- if cart.item_count > 99 -%}
+                99+
+              {%- else -%}
+                {{ cart.item_count }}
+              {%- endif -%}
+            </span>
+          </div>
+        </button>
+      {%- endif -%}
+
+      <div class="header__cart-price-bubble" data-header-icon>
+        <span class="icon-fallback-text">{{ 'layout.cart.cart_price' | t }}</span>
+        <span data-cart-price-bubble data-cart-price>{{ cart.total_price | money }}</span>
+      </div>
+
+      {%- if section.settings.main_menu != blank -%}
+        <button class="header__icon header__icon--button header__icon--menu-navigation"
+          aria-controls="MenuNavigationDrawer"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          aria-label="{{ 'sections.header.menu' | t }}"
+          data-mobile-navigation-toggle
+        >
+          <span class="menu-icon">
+            <span class="menu-icon__bar"></span>
+          </span>
+        </button>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.main_menu != blank -%}
+      <div class="stage header__mobile-navigation" data-popup-stage="menu-navigation" data-mobile-navigation-container>
+        <div class="stage__overlay" data-popup-close="menu-navigation"></div>
+        <div
+          class="drawer drawer--right"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="menu-drawer-title"
+          tabindex="-1"
+          data-popup="menu-navigation"
+          data-mobile-navigation-drawer
+        >
+          <button class="header__icon header__icon--button header__icon--mobile-navigation-close"
+            aria-label="{{ 'sections.header.close' | t }}"
+            data-popup-close="menu-navigation"
+          >
+            <span class="menu-icon">
+              <span class="menu-icon__bar"></span>
+            </span>
+          </button>
+          <h2 class="visually-hidden" id="menu-drawer-title">{{ 'sections.header.menu' | t }}</h2>
+          {% render 'menu-navigation', menu: linklists[section.settings.main_menu], is_mobile: true %}
+        </div>
+      </div>
+    {%- endif -%}
+  </header>
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Organization",
+  "name": "{{ shop.name }}",
+  {% if section.settings.logo %}
+    {% assign image_size = section.settings.logo.width | append:'x' %}
+    "logo": "https:{{ section.settings.logo | img_url: image_size }}",
+  {% endif %}
+  "sameAs": [
+    "{{ settings.social_twitter_link }}",
+    "{{ settings.social_facebook_link }}",
+    "{{ settings.social_pinterest_link }}",
+    "{{ settings.social_instagram_link }}",
+    "{{ settings.social_tumblr_link }}",
+    "{{ settings.social_snapchat_link }}",
+    "{{ settings.social_youtube_link }}",
+    "{{ settings.social_vimeo_link }}"
+  ],
+  "url": "{{ shop.url }}{{ page.url }}"
+}
+</script>
+
+{% if request.page_type == 'index' %}
+  {% assign potential_action_target = shop.url | append: routes.search_url | append: "?q={search_term_string}" %}
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "WebSite",
+      "name": {{ shop.name | json }},
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {{ potential_action_target | json }},
+        "query-input": "required name=search_term_string"
+      },
+      "url": {{ shop.url | append: page.url | json }}
+    }
+  </script>
+{% endif %}
+
+{% schema %}
+{
+  "name": {
+    "cs": "Záhlaví",
+    "da": "Overskrift",
+    "de": "Titel",
+    "en": "Header",
+    "es": "Encabezado",
+    "fi": "Ylätunniste",
+    "fr": "En-tête",
+    "it": "Header",
+    "ja": "ヘッダー",
+    "ko": "헤더",
+    "nb": "Header",
+    "nl": "Koptekst",
+    "pl": "Nagłówek",
+    "pt-BR": "Cabeçalho",
+    "pt-PT": "Cabeçalho",
+    "sv": "Rubrik",
+    "th": "ส่วนหัว",
+    "tr": "Üstbilgi",
+    "vi": "Đầu trang",
+    "zh-CN": "标头",
+    "zh-TW": "標頭"
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": {
+        "cs": "Obrázek loga",
+        "da": "Logobillede",
+        "de": "Logo-Foto",
+        "en": "Logo image",
+        "es": "Imagen del logo",
+        "fi": "Logokuva",
+        "fr": "Image du logo",
+        "it": "Immagine del logo",
+        "ja": "ロゴ画像",
+        "ko": "로고 이미지",
+        "nb": "Logobilde",
+        "nl": "Afbeelding van logo",
+        "pl": "Obraz logo",
+        "pt-BR": "Imagem do logotipo",
+        "pt-PT": "Imagem do logótipo",
+        "sv": "Logobild",
+        "th": "รูปภาพโลโก้",
+        "tr": "Logo görseli",
+        "vi": "Hình ảnh logo",
+        "zh-CN": "logo 图片",
+        "zh-TW": "標誌圖片"
+      }
+    },
+    {
+      "type": "range",
+      "id": "logo_max_width",
+      "min": 50,
+      "max": 180,
+      "step": 10,
+      "unit": "px",
+      "label": {
+        "cs": "Šířka vlastního loga",
+        "da": "Tilpasset logobredde",
+        "de": "Logobreite",
+        "en": "Custom logo width",
+        "es": "Ancho del logo personalizado",
+        "fi": "Mukautetun logon leveys",
+        "fr": "Largeur personnalisée du logo",
+        "it": "Larghezza logo personalizzato",
+        "ja": "ロゴの幅をカスタマイズする",
+        "ko": "사용자 지정 로고 폭",
+        "nb": "Tilpasset logobredde",
+        "nl": "Aangepaste logo-breedte",
+        "pl": "Niestandardowa szerokość logo",
+        "pt-BR": "Largura do logotipo personalizado",
+        "pt-PT": "Largura de logótipo personalizada",
+        "sv": "Anpassad logotypsbredd",
+        "th": "ความกว้างของโลโก้ที่กำหนดเอง",
+        "tr": "Özel logo genişliği",
+        "vi": "Chiều rộng logo tùy chỉnh",
+        "zh-CN": "自定义 logo 宽度",
+        "zh-TW": "自訂商標寬度"
+      },
+      "default": 50
+    },
+    {
+      "type": "link_list",
+      "id": "main_menu",
+      "label": {
+        "cs": "Nabídka",
+        "da": "Menu",
+        "de": "Menü",
+        "en": "Menu",
+        "es": "Menú",
+        "fi": "Valikko",
+        "fr": "Menu",
+        "it": "Menu",
+        "ja": "メニュー",
+        "ko": "메뉴",
+        "nb": "Meny",
+        "nl": "Menu",
+        "pl": "Menu",
+        "pt-BR": "Menu",
+        "pt-PT": "Menu",
+        "sv": "Meny",
+        "th": "เมนู",
+        "tr": "Menü",
+        "vi": "Menu",
+        "zh-CN": "菜单",
+        "zh-TW": "選單"
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_secondary_background",
+      "label": {
+        "cs": "Povolit sekundární pozadí a barvu textu",
+        "da": "Aktivér sekundær baggrunds- og tekstfarve",
+        "de": "Sekundäre Hintergrund- und Textfarbe aktivieren",
+        "en": "Enable secondary background and text color",
+        "es": "Activar color de texto y fondo secundario",
+        "fi": "Ota käyttöön toissijainen tausta ja tekstiväri",
+        "fr": "Activer l'arrière-plan secondaire et la couleur du texte",
+        "it": "Abilita sfondo secondario e colore del testo",
+        "ja": "サブ背景とテキストの配色を有効にする",
+        "ko": "보조 배경 및 텍스트 색상 활성화",
+        "nb": "Aktiver sekundærbakgrunn og tekstfarge",
+        "nl": "Secundaire achtergrond en tekstkleur inschakelen",
+        "pl": "Włącz dodatkowe tło i kolor tekstu",
+        "pt-BR": "Habilitar fundo e cor do texto secundários",
+        "pt-PT": "Ativar cor do fundo e do texto secundário",
+        "sv": "Aktivera sekundär bakgrunds- och textfärg",
+        "th": "เปิดใช้พื้นหลังและสีตัวอักษรรอง",
+        "tr": "İkincil arka planı ve metin rengini etkinleştir",
+        "vi": "Bật màu chữ và nền thứ cấp",
+        "zh-CN": "启用辅助背景和文本颜色",
+        "zh-TW": "啟用次要背景和文字顏色"
+      },
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": {
+        "cs": "Zobrazit hledání",
+        "da": "Vis søgning",
+        "de": "Suche anzeigen",
+        "en": "Show search",
+        "es": "Mostrar búsqueda",
+        "fi": "Näytä haku",
+        "fr": "Afficher la recherche",
+        "it": "Mostra ricerca",
+        "ja": "検索を表示する",
+        "ko": "검색 표시",
+        "nb": "Vis søk",
+        "nl": "Zoekopdracht weergeven",
+        "pl": "Pokaż wyszukiwanie",
+        "pt-BR": "Exibir pesquisa",
+        "pt-PT": "Mostrar pesquisa",
+        "sv": "Visa sökning",
+        "th": "แสดงการค้นหา",
+        "tr": "Aramayı göster",
+        "vi": "Hiển thị tìm kiếm",
+        "zh-CN": "显示搜索",
+        "zh-TW": "顯示搜尋"
+      },
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": {
+        "cs": "Panel oznámení",
+        "da": "Meddelelseslinje",
+        "de": "Ankündigungsleiste",
+        "en": "Announcement bar",
+        "es": "Barra de anuncios",
+        "fi": "Ilmoituspalkki",
+        "fr": "Barre d'annonces",
+        "it": "Barra degli annunci",
+        "ja": "告知バー",
+        "ko": "공지 표시줄",
+        "nb": "Kunngjøringslinje",
+        "nl": "Aankondigingsbalk",
+        "pl": "Pasek ogłoszeń",
+        "pt-BR": "Barra de avisos",
+        "pt-PT": "Barra de comunicado",
+        "sv": "Meddelandefält",
+        "th": "แถบประกาศ",
+        "tr": "Duyuru çubuğu",
+        "vi": "Thanh thông báo",
+        "zh-CN": "公告栏",
+        "zh-TW": "公告列"
+      }
+    },
+    {
+      "type": "checkbox",
+      "id": "announcement_bar_enabled",
+      "label": {
+        "cs": "Zobrazit oznámení",
+        "da": "Vis meddelelse",
+        "de": "Ankündigung anzeigen",
+        "en": "Show announcement",
+        "es": "Mostrar anuncio",
+        "fi": "Näytä ilmoitus",
+        "fr": "Afficher l'annonce",
+        "it": "Mostra annuncio",
+        "ja": "告知を表示する",
+        "ko": "공지 표시",
+        "nb": "Vis kunngjøring",
+        "nl": "Aankondiging weergeven",
+        "pl": "Pokaż ogłoszenie",
+        "pt-BR": "Exibir comunicado",
+        "pt-PT": "Mostrar comunicado",
+        "sv": "Visa tillkännagivande",
+        "th": "แสดงประกาศ",
+        "tr": "Duyuruyu göster",
+        "vi": "Hiển thị thông báo",
+        "zh-CN": "显示公告",
+        "zh-TW": "顯示公告"
+      },
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "announcement_bar_text",
+      "label": {
+        "cs": "Text",
+        "da": "Tekstfarve",
+        "de": "Textfarbe",
+        "en": "Text",
+        "es": "Color del texto",
+        "fi": "Teksti",
+        "fr": "Texte",
+        "it": "Testo",
+        "ja": "テキスト",
+        "ko": "텍스트",
+        "nb": "Tekst",
+        "nl": "Tekstkleur",
+        "pl": "Tekst",
+        "pt-BR": "Texto",
+        "pt-PT": "Texto",
+        "sv": "Text",
+        "th": "ข้อความ",
+        "tr": "Metin",
+        "vi": "Văn bản",
+        "zh-CN": "文本",
+        "zh-TW": "文字"
+      },
+      "default": {
+        "cs": "Tady můžete zadat oznámení",
+        "da": "Meddel noget her",
+        "de": "Hier etwas ankündigen",
+        "en": "Announce something here",
+        "es": "Anuncia algo aquí",
+        "fi": "Ilmoita jotakin tässä",
+        "fr": "Annoncez quelque chose ici",
+        "it": "Annuncia qualcosa qui",
+        "ja": "ここで告知してください",
+        "ko": "여기에 공지하십시오",
+        "nb": "Kunngjør noe her",
+        "nl": "Kondig hier iets aan",
+        "pl": "Ogłoś coś tutaj",
+        "pt-BR": "Anuncie algo aqui",
+        "pt-PT": "Anunciar algo aqui",
+        "sv": "Meddela något här",
+        "th": "ประกาศข้อความที่นี่",
+        "tr": "Buraya bir duyuru ekleyin",
+        "vi": "Thông báo điều gì đó tại đây",
+        "zh-CN": "在此处进行公告",
+        "zh-TW": "在此公告資訊"
+      }
+    },
+    {
+      "type": "color",
+      "id": "announcement_bar_color_background",
+      "label": {
+        "cs": "Panel",
+        "da": "Bjælke",
+        "de": "Zeile",
+        "en": "Bar",
+        "es": "Barra",
+        "fi": "Palkki",
+        "fr": "Barre",
+        "it": "Barra",
+        "ja": "バー",
+        "ko": "바",
+        "nb": "Felt",
+        "nl": "Balk",
+        "pl": "Pasek",
+        "pt-BR": "Barra",
+        "pt-PT": "Barra",
+        "sv": "Fält",
+        "th": "แถบ",
+        "tr": "Çubuk",
+        "vi": "Thanh",
+        "zh-CN": "栏",
+        "zh-TW": "橫條"
+      },
+      "default": "#FAF3EC"
+    },
+    {
+      "type": "color",
+      "id": "announcement_bar_color_text",
+      "label": {
+        "cs": "Text",
+        "da": "Tekstfarve",
+        "de": "Textfarbe",
+        "en": "Text",
+        "es": "Color del texto",
+        "fi": "Teksti",
+        "fr": "Texte",
+        "it": "Testo",
+        "ja": "テキスト",
+        "ko": "텍스트",
+        "nb": "Tekst",
+        "nl": "Tekstkleur",
+        "pl": "Tekst",
+        "pt-BR": "Texto",
+        "pt-PT": "Texto",
+        "sv": "Text",
+        "th": "ข้อความ",
+        "tr": "Metin",
+        "vi": "Văn bản",
+        "zh-CN": "文本",
+        "zh-TW": "文字"
+      },
+      "default": "#000000"
+    }
+  ]
+}
+{% endschema %}

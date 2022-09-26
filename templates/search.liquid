@@ -1,0 +1,87 @@
+{% paginate search.results by 10 %}
+
+  <div class="search search--page">
+    <h1 class="search__heading">
+      {%- if search.performed == false -%}
+        {{ 'general.search.title' | t }}
+      {%- else -%}
+        <span class="visually-hidden">{{ 'general.search.heading' | t: count: search.results_count }}:</span>
+        {{ 'general.search.results_with_count' | t: terms: search.terms, count: search.results_count }}
+      {%- endif -%}
+    </h1>
+    {%- if search.performed and search.results_count == 0 -%}
+      <p class="search__heading-text">{{ 'general.search.no_results' | t }}</p>
+    {%- endif -%}
+    <form action="{{ routes.search_url }}" method="get" role="search" class="search__form form" data-form=''>
+      <div class="search__form-input-wrapper form__input-wrapper{% if search.terms %} form__input-wrapper--floating-label{% endif %}" data-form-input-wrapper>
+        <label class="search__form-input-label form__input-label">{{ 'general.search.search' | t }}</label>
+        <input
+          type="search"
+          name="q"
+          value="{{ search.terms | escape }}"
+          class="search__form-input form__input"
+        />
+        <input type="hidden" name="options[prefix]" value="last" aria-hidden="true" />
+      </div>
+      <button type="submit" class="search__form-button" aria-label="{{ 'general.search.search' | t }}">
+        {% render 'icon-search' %}
+      </button>
+    </form>
+  </div>
+
+  {%- if search.performed -%}
+    {%- if search.results_count > 0 -%}
+      <hr aria-hidden="true" />
+    {%- endif -%}
+
+    <h2 class="visually-hidden">{{ 'general.search.heading' | t: count: search.results_count }}</h2>
+
+    <ul class="search__list" role="list">
+      {%- for item in search.results -%}
+        <li class="search_list-item">
+          {%- if item.object_type == 'product' -%}
+            {% render 'product-card-list', product: item %}
+          {%- else -%}
+            <div class="product-card product-card--list">
+              <a href="{{ item.url }}" class="full-width-link">
+                <span class="visually-hidden">{{ item.title }}</span>
+              </a>
+              <div class="product-card__link">
+                <div class="product-card__content">
+                  <div class="product-card__title-wrapper">
+                    <span class="product-card__title">{{ item.title }}</span>
+                  </div>
+                  <div>
+                    {% if item.published_at %}{{ item.published_at | date: format: "date" }} &#8212; {% endif %}
+                    {{ item.content | strip_html | truncate: 100 }}
+                  </div>
+                </div>
+
+                {%- unless item.image == null -%}
+                  <div class="product-card__image-wrapper">
+                    <img srcset="{% if item.image.width >= 90 %}{{ item.image | img_url: '90x' }} 90w,{% endif %}
+                        {% if item.image.width >= 180 %}{{ item.image | img_url: '180x' }} 180w,{% endif %}
+                        {% if item.image.width >= 110 %}{{ item.image | img_url: '110x' }} 110w,{% endif %}
+                        {% if item.image.width >= 220 %}{{ item.image | img_url: '220x' }} 220w,{% endif %}"
+                      sizes="(min-width: 750px) 110px, 90px"
+                      src="{{ item.image | img_url: '110x110' }}"
+                      width="{{ item.image.width }}"
+                      height="{{ item.image.height }}"
+                      loading="lazy"
+                      class="product-card__image"
+                      alt="{{ item.image.alt | escape }}">
+                  </div>
+                {%- endunless -%}
+              </div>
+            </div>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    {%- if paginate.pages > 1 -%}
+      {% render 'pagination', paginate: paginate %}
+    {%- endif -%}
+  {%- endif -%}
+{% endpaginate %}
+

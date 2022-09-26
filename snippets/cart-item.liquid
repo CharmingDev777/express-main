@@ -1,0 +1,123 @@
+<div class="cart-drawer__item" data-cart-item-product-id="{{ item.product.id }}" data-cart-item="{{ item.key }}">
+  <div class="cart-drawer__product">
+    <div>
+      <p class="cart-drawer__name">{{ item.title }}</p>
+
+      {%- unless item.product.has_only_default_variant -%}
+        <dl class="cart-drawer__options">
+          {%- for option in item.options_with_values -%}
+            <div class="cart-drawer__option">
+              <dt>{{ option.name }}: </dt>
+              <dd>{{ option.value }}</dd>
+            </div>
+          {%- endfor -%}
+        </dl>
+      {%- endunless -%}
+
+      {%- unless item.selling_plan_allocation == nil -%}
+        <p class="cart-drawer__options">
+          <span class="cart-drawer__option cart-drawer__option--single">{{ item.selling_plan_allocation.selling_plan.name }}</span>
+        </p>
+      {%- endunless -%}
+        
+      {%- assign property_size = item.properties | size -%}
+      {%- unless property_size == 0 -%}
+        <dl class="cart-drawer__options">
+          {%- for property in item.properties -%}
+            {% assign property_first_char = property.first | slice: 0 %}
+            {%- unless property.last == blank or property_first_char == "_" -%}
+              <div class="cart-drawer__option">
+                <dt>{{ property.first }}: </dt>
+
+                {% comment %}
+                  Check if there was an uploaded file associated
+                {% endcomment %}
+                <dd>
+                  {%- if property.last contains '/uploads/' -%}
+                    <a href="{{ property.last }}" target="_blank" class="cart-drawer__file-option">{{ property.last | split: '/' | last }}</a>
+                  {%- else -%}
+                    {{ property.last }}
+                  {%- endif -%}
+                </dd>
+              </div>
+            {%- endunless -%}
+          {%- endfor -%}
+        </dl>
+      {%- endunless -%}
+
+    </div>
+
+    {% if item.image %}
+      <div class="cart-drawer__media">
+        <img srcset="{% if item.image.width >= 67 %}{{ item.image | img_url: '67x' }} 1x,{% endif %}
+          {% if item.image.width >= 134 %}{{ item.image | img_url: '134x' }} 2x{% endif %}"
+          width="{{ item.image.width }}"
+          height="{{ item.image.height }}"
+          loading="lazy"
+          src="{{ item | img_url: '134x' }}"
+          alt="{{ item.image.alt | escape }}">
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="cart-drawer__tuning">
+    <div class="cart-drawer__controls">
+      <label for="quantity_{{ item.key }}"
+        class="cart-drawer__label"
+        aria-label="{{ 'cart.general.quantity' | t }}">
+
+        {{ 'cart.general.qty' | t }}
+      </label>
+
+      <input id="quantity_{{ item.key }}"
+        class="form__input cart-drawer__input"
+        value="{{ item.quantity }}"
+        type="number"
+        pattern="\d*"
+        min="1"
+        aria-label="{{ 'cart.general.item_quantity' | t }}"
+        data-cart-item-quantity>
+
+      <button aria-label="{{ 'cart.general.remove_title' | t: title: item.title }}"
+        class="cart-drawer__remove"
+        data-remove>
+
+        {{ 'cart.general.remove' | t }}
+      </button>
+    </div>
+
+    <div class="cart-drawer__price">
+      {%- if item.original_price != item.final_price -%}
+        <div class="cart-drawer__discounted-prices">
+          <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+          <span class="cart-item__original-price cart-item__original-price--strike">
+            {{ item.original_price | money }}
+          </span>
+          <span class="visually-hidden">{{ 'products.product.sale_price' | t }}</span>
+          <span class="cart-item__price cart-item__price--discount">{{ item.final_price | money }}</span>
+        </div>
+      {%- else -%}
+        <span class="cart-item__original-price cart-item__price">{{ item.original_price | money }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if item.variant.available and item.unit_price_measurement -%}
+    <div class="cart-drawer__unit-price">
+      {% render 'product-unit-price', variant: item, available: item.variant.available %}
+    </div>
+  {%- endif -%}
+
+  {%- if item.discounts.size > 0 -%}
+    <ul class="cart-drawer__discounts"  role="list">
+      {%- for discount in item.discounts -%}
+        <li>
+          {% render 'icon-discount' %}
+          {{ discount.title }}
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+
+  <p class="cart-drawer__error" aria-live="polite" data-cart-item-error></p>
+</div>

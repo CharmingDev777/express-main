@@ -1,0 +1,96 @@
+<div class="stage stage--cart" data-popup-stage="cart">
+  <div class="stage__overlay" data-popup-close="cart"></div>
+    <div role="dialog"
+         aria-modal="true"
+         aria-labelledby="cart-drawer-title"
+         data-cart
+         data-popup="cart"
+         class="drawer drawer--right {% if cart.items.size == 0 %} is-empty {% endif %}">
+      <div class="cart-drawer-container" data-popup-focus="cart" tabindex="-1">
+        <form id="CartDrawer"
+          action="{{ routes.cart_url }}"
+          class="cart-drawer critical-hidden"
+          method="post"
+          novalidate>
+
+          <div class="cart-drawer__header">
+            <h2 class="visually-hidden" id="cart-drawer-title">{{ 'cart.general.title' | t }}</h2>
+            <button type="button"
+              class="cart-drawer__close-button"
+              data-popup-close="cart"
+              data-cart-close>
+
+              {% render 'icon-arrow-back' %}
+              <span class="cart-drawer__title">{{ 'cart.general.continue_shopping' | t }}</span>
+            </button>
+          </div>
+
+          <div class="cart-drawer__content">
+            <p class="cart-drawer__empty-text" data-cart-empty-text>{{ 'cart.general.empty' | t }}</p>
+            <p class="cart-drawer__no-cookies-text">{{ 'cart.general.cookies_required' | t }}</p>
+
+            <div class="cart-drawer__items" data-cart-items>
+              {% for item in cart.items %}
+                {% render 'cart-item' with item as item %}
+              {% endfor %}
+            </div>
+
+            {% if settings.show_cart_note %}
+              <div class="cart-drawer__note-wrapper">
+                <label for="Note" class="cart-drawer__note-label">{{ 'cart.general.note' | t }}</label>
+                <textarea class="cart-drawer__note" name="note" id="Note" data-cart-note>{{ cart.note }}</textarea>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="cart-drawer__footer">
+            <div class="cart-drawer__totals">
+              <h3 class="cart-drawer__subtotal">{{ 'cart.general.subtotal' | t }}</h3>
+              <p class="cart-drawer__subtotal-value" data-cart-price>{{ cart.total_price | money }}</p>
+              <p class="visually-hidden" data-price-live-region aria-live="polite" role="status"></p>
+            </div>
+
+            <div data-discounts>
+              {% unless cart.cart_level_discount_applications.size == 0 %}
+                <ul class="cart-drawer__discounts"  role="list">
+                  {% for discount in cart.cart_level_discount_applications %}
+                    <li>
+                      {% render 'icon-discount' %}
+                      {{ discount.title }}
+                      (-{{ discount.total_allocated_amount | money }})
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endunless %}
+            </div>
+
+            {%- capture taxes_shipping_checkout -%}
+              {%- if shop.taxes_included and shop.shipping_policy.body != blank -%}
+                {{ 'cart.general.taxes_included_and_shipping_policy_html' | t: link: shop.shipping_policy.url }}
+              {%- elsif shop.taxes_included -%}
+                {{ 'cart.general.taxes_included_but_shipping_at_checkout' | t }}
+              {%- elsif shop.shipping_policy.body != blank -%}
+                {{ 'cart.general.taxes_and_shipping_policy_at_checkout_html' | t: link: shop.shipping_policy.url }}
+              {%- else -%}
+                {{ 'cart.general.taxes_and_shipping_at_checkout' | t }}
+              {%- endif -%}
+            {%- endcapture -%}
+
+            <p class="cart-drawer__notice">{{ taxes_shipping_checkout }}</p>
+
+            <div class="cart-drawer__ctas">
+              <button type="submit"
+                class="button"
+                name="checkout"
+                data-checkout-button
+                {% if cart.items.size == 0 %} disabled {% endif %}>
+
+                {{ 'cart.general.checkout' | t }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

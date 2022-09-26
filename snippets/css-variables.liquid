@@ -1,0 +1,62 @@
+{%- liquid
+  assign font_heading = settings.font_heading
+  assign font_body = settings.font_body
+  assign font_body_bold = font_body | font_modify: 'weight', 'bolder'
+  assign font_body_italic = font_body | font_modify: 'style', 'italic'
+  assign font_body_bold_italic = font_body_bold | font_modify: 'style', 'italic'
+  assign font_body_base_size = settings.font_body_base_size | times: 0.625
+-%}
+
+{%- style -%}
+  {{ font_heading | font_face: font_display: 'swap' }}
+  {{ font_body | font_face: font_display: 'swap' }}
+  {{ font_body_bold | font_face: font_display: 'swap' }}
+  {{ font_body_italic | font_face: font_display: 'swap' }}
+  {{ font_body_bold_italic | font_face: font_display: 'swap' }}
+
+  :root {
+    {% comment %}
+      Heading Typography
+    {% endcomment %}
+    --font-heading-family: {{ font_heading.family }}, {{ font_heading.fallback_families }};
+    --font-heading-style: {{ font_heading.style }};
+    --font-heading-weight: {{ font_heading.weight }};
+    --font-heading-base-size: {{ settings.font_heading_base_size | divided_by: font_body_base_size }}rem;
+
+    {% comment %}
+      Body Typography
+    {% endcomment %}
+    --font-body-family: {{ font_body.family }}, {{ font_body.fallback_families }};
+    --font-body-style: {{ font_body.style }};
+    --font-body-weight: {{ font_body.weight }};
+    --font-body-weight-bold: {{ font_body_bold.weight | default: 700 }};
+    --font-body-base-size: {{ font_body_base_size | times: 6.25 }}%;
+
+    {% comment %}
+      Page Colors
+    {% endcomment %}
+    --color-background: {{ settings.color_background }};
+    --color-background-rgba-stripped: {{ settings.color_background | color_to_rgb | remove: 'rgb(' | remove: ')' }};
+    --color-secondary-background: {{ settings.color_secondary_background }};
+    --color-borders-and-lines: {{ settings.color_borders_and_lines }};
+    --color-borders-and-lines-rgba-stripped: {{ settings.color_borders_and_lines | color_to_rgb | remove: 'rgb(' | remove: ')' }};
+    --color-button: {{ settings.color_button }};
+
+    {% comment %}
+      Text Colors
+    {% endcomment %}
+    --color-headings-and-links: {{ settings.color_headings_and_links }};
+    --color-headings-and-links-rgba-stripped: {{ settings.color_headings_and_links | color_to_rgb | remove: 'rgb(' | remove: ')' }};
+    --color-body-text: {{ settings.color_body_text }};
+    --color-body-text-rgba-stripped: {{ settings.color_body_text | color_to_rgb | remove: 'rgb(' | remove: ')' }};
+    --color-secondary-background-text: {{ settings.color_secondary_background_text }};
+    --color-secondary-background-text-rgba-stripped: {{ settings.color_secondary_background_text | color_to_rgb | remove: 'rgb(' | remove: ')' }};
+    --color-sale-price: {{ settings.color_sale_price }};
+
+    {% comment %}
+      Form Field Colors
+    {% endcomment %}
+    --color-field-text: {{ settings.color_field_text }};
+    --color-field-borders: {{ settings.color_field_borders }};
+  }
+{%- endstyle -%}

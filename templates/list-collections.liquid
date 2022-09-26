@@ -1,0 +1,52 @@
+{% comment %}
+  This page represents the /collections and /products pages.
+{% endcomment %}
+
+<div class="collection-list">
+  <h1 class="collection-list__title">{{ page_title }}</h1>
+  {% paginate collections by 6 %}
+    <ul class="collection-list__list" role="list">
+      {% for collection in collections %}
+        <li class="collection-list__item">
+          <a class="full-width-link" href="{{ collection.url }}">
+            <span class="visually-hidden">{{ 'collections.general.link_title' | t: title: collection.title }}</span>
+          </a>
+          <div class="collection-list__image-wrapper">
+            {% unless collection == blank %}
+              {%- if collection.products.first.media != empty -%}
+                {%- assign image = collection.image | default: collection.products.first.featured_media -%}
+              {%- else -%}
+                {%- assign image = blank -%}
+              {%- endif -%}
+              <img srcset="{% if image.width >= 118 %}{{ image | img_url: '118x' }} 118w,{% endif %}
+                  {% if image.width >= 236 %}{{ image | img_url: '236x' }} 236w,{% endif %}
+                  {% if image.width >= 327 %}{{ image | img_url: '327x' }} 327w,{% endif %}
+                  {% if image.width >= 654 %}{{ image | img_url: '654x' }} 654w,{% endif %}
+                  {% if image.width >= 412 %}{{ image | img_url: '412x' }} 412w,{% endif %}
+                  {% if image.width >= 824 %}{{ image | img_url: '824x' }} 824w{% endif %}"
+                sizes="(min-width: 990px) 327px, (min-width: 749px) calc((100vw - 15rem) / 2), calc(100vw - 8.4rem)"
+                src="{{ image | img_url: '420x' }}"
+                width="{{ image.width }}"
+                height="{{ image.height }}"
+                loading="lazy"
+                class="collection-list__image"
+                alt="{{ collection.title }}">
+            {% else %}
+              {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+              {{ 'collection-' | append: current | placeholder_svg_tag: 'placeholder-svg placeholder-svg--small collection-list__image' }}
+            {% endunless %}
+          </div>
+
+          <p class="collection-list__collection">
+            <span class="collection-list__collection-title">{{- collection.title | escape -}}</span>
+            <sup class="collection-list__collection-count">{{- collection.products_count -}}<span class="visually-hidden">{{- 'sections.featured_collections.products' | t | prepend: ' ' -}}</span></sup>
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if paginate.pages > 1 %}
+      {% render 'pagination', paginate: paginate %}
+    {% endif %}
+  {% endpaginate %}
+
+</div>

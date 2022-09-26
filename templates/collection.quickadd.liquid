@@ -1,0 +1,26 @@
+<section class="collection__section" data-section-id="quick_add">
+  <h1 class="collection__title">{{ collection.title }}</h1>
+  <div class="featured-collections__wrapper">
+    {% paginate collection.products by 36 %}
+      <ul class="featured-collections__products collections__products">
+      {%- for product in collection.products -%}
+        <li class="featured-collections__item" data-view-more-item>
+          {% render 'product-card-list', product: product, show_vendor: false, show_form: true %}
+        </li>
+      {%- else -%}
+        {%- if collection.handle == 'all' and collection.all_vendors.size == 0 and collection.all_types.size == 0 -%}
+          {%- for i in (1..4) -%}
+            <li class="featured-collections__item">
+              {% render 'product-card-list', product: product %}
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      </ul>
+
+      {% if paginate.pages > 1 %}
+        {% render 'pagination', paginate: paginate %}
+      {% endif %}
+    {% endpaginate %}
+  </div>
+</section>

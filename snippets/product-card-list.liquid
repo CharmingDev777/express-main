@@ -1,0 +1,124 @@
+{% comment %}
+    Renders a product card using "List" style
+
+    Accepts:
+    - product: {Object} Product Liquid object (optional)
+    - show_vendor: {Boolean} Show the product's vendor depending on the section setting (optional)
+    - show_form: {Boolean} Show the product form (optional)
+
+    Usage:
+    {% render 'product-card-list' %}
+    {% render 'product-card-list', product: product, show_vendor: section.settings.show_vendor %}
+{% endcomment %}
+
+{%- liquid
+  if product.title
+    assign product_title = product.title
+    assign product_desc = product.description
+    assign product_vendor = product.vendor
+  else
+    assign product_title = 'homepage.onboarding.product_title' | t
+    assign product_desc = 'homepage.onboarding.product_description' | t
+    assign product_vendor = 'products.product.vendor' | t
+    assign onboarding = true
+  endif
+-%}
+
+{%- capture product_img -%}
+  {%- if product.featured_media or onboarding -%}
+    <div class="product-card__image-wrapper">
+      {% if product.featured_media %}
+        {%- if show_form -%}
+          <a href="{{ product.url | within: collection }}" tabindex="-1" data-product-card-link>
+        {%- endif -%}
+        <img srcset="{% if product.featured_media.width >= 90 %}{{ product.featured_media | img_url: '90x' }} 90w,{% endif %}
+            {% if product.featured_media.width >= 180 %}{{ product.featured_media | img_url: '180x' }} 180w,{% endif %}
+            {% if product.featured_media.width >= 110 %}{{ product.featured_media | img_url: '110x' }} 110w,{% endif %}
+            {% if product.featured_media.width >= 220 %}{{ product.featured_media | img_url: '220x' }} 220w,{% endif %}"
+          sizes="(min-width: 750px) 110px, 90px"
+          src="{{ product.featured_media | img_url: '110x110' }}"
+          width="{{ product.featured_media.width }}"
+          height="{{ product.featured_media.height }}"
+          loading="lazy"
+          class="product-card__image"
+          alt="{{ product.featured_media.alt | escape }}"
+          data-product-card-image>
+        {%- if show_form -%}
+          </a>
+        {%- endif -%}
+      {%- endif -%}
+      {%- if onboarding -%}
+        {%- capture current -%}{% cycle 1, 2, 3, 4 %}{%- endcapture -%}
+        {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg placeholder-svg--small product-card__image' }}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+<div class="product-card product-card--list{% if show_form %} product-card--quick-add{% if product.has_only_default_variant %} product-card--has-variants{% endif %}{% endif %}"{% unless onboarding %} data-product-card data-product-id="{{ product.id }}"{% endunless %}{% if show_form %} data-show-quantity-selector="true"{% endif %} tabindex="-1">
+  {%- unless show_form -%}
+    <a class="full-width-link" href="{{ product.url | within: collection }}" data-product-card-link>
+      <span class="visually-hidden">{{ product_title }}</span>
+    </a>
+  {%- else -%}
+    <div class="full-width-link">
+      <span class="visually-hidden">{{ product_title }}</span>
+    </div>
+  {%- endunless -%}
+
+  <div class="product-card__quantity"
+    data-label-single="{{ 'products.product.quantity_indicator.single' | t: title: product_title }}"
+    data-label-multi="{{ 'products.product.quantity_indicator.multi' | t: quantity: '[quantity]', title: product_title }}"
+    data-quantity-indicator="{{ product.id }}">
+    <span aria-hidden="true" data-quantity-number></span>
+    <span class="visually-hidden" data-quantity-label></span>
+  </div>
+
+  <div class="product-card__link">
+    {{ product_img }}
+    <div class="product-card__content">
+      <div class="product-card__title-wrapper" aria-hidden="true">
+        {%- unless show_form -%}
+          <span class="product-card__title">{{ product_title }}</span>
+        {%- else -%}
+          <a class="product-card__title" href="{{ product.url | within: collection }}" data-product-card-link>{{ product_title }}</a>
+        {%- endunless -%}
+        {{ product_img }}
+      </div>
+      {%- if show_vendor -%}
+        <div class="product-card__vendor">{{ product_vendor }}</div>
+      {%- endif -%}
+      <div class="product-card__price-wrapper">
+        {% render 'product-price-listing', product: product %}
+        {% render 'product-price', variant: product.selected_or_first_available_variant, product: product, wrapper_class: 'price--listing price--variants' %}
+        <a href="{{ product.url | within: collection }}" class="rte product-card__view-details" data-product-card-link>
+          {{ 'products.product.view_details' | t }}
+        </a>
+      </div>
+      <div class="product-card__description-wrapper" aria-hidden="true">
+        <p class="product-card__description">{{ product_desc | strip_html | truncate: 120 }}</p>
+      </div>
+      {%- if show_form -%}
+        <div class="product-card__quick-add">
+          {%- unless product.has_only_default_variant -%}
+            <div class="product-form__buttons product-form__buttons--show-options">
+              <button
+                name="add"
+                class="product-form__add-to-cart"
+                data-show-options-button>
+                  {{ 'products.product.show_options' | t }}
+              </button>
+            </div>
+          {%- endunless -%}
+
+          {% render 'product-form',
+            section_id: section.id,
+            product: product,
+            current_variant: product.selected_or_first_available_variant,
+            show_instant_quantity: true
+          %}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>

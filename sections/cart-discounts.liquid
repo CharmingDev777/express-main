@@ -1,0 +1,11 @@
+{% unless cart.cart_level_discount_applications.size == 0 %}
+  <ul class="cart-drawer__discounts"  role="list">
+    {% for discount in cart.cart_level_discount_applications %}
+      <li>
+        {% render 'icon-discount' %}
+        {{ discount.title }}
+        (-{{ discount.total_allocated_amount | money }})
+      </li>
+    {% endfor %}
+  </ul>
+{% endunless %}
